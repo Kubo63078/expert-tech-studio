@@ -1,0 +1,229 @@
+// ExpertTech Studio Database Schema - SQLite Development Version
+// Simplified schema for development and testing
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// =====================================
+// ENUM DEFINITIONS
+// =====================================
+
+enum UserRole {
+  CLIENT
+  PROJECT_MANAGER
+  DEVELOPER
+  ADMIN
+}
+
+enum ClientStatus {
+  INITIAL
+  ANALYZED
+  IN_DEVELOPMENT
+  LAUNCHED
+  CANCELLED
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+}
+
+enum RecommendationStatus {
+  DRAFT
+  PRESENTED
+  ACCEPTED
+  REJECTED
+  IN_DEVELOPMENT
+}
+
+enum TemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  CANCELLED
+}
+
+// =====================================
+// CORE USER MANAGEMENT
+// =====================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(CLIENT)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  clientProfile    ClientProfile?
+  refreshTokens    RefreshToken[]
+  managedProjects  Project[]       @relation("ProjectManager")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isRevoked Boolean  @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// =====================================
+// CLIENT MANAGEMENT
+// =====================================
+
+model ClientProfile {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  status         ClientStatus @default(INITIAL)
+  basicInfo      String       // JSON string
+  expertise      String?      // JSON string
+  businessIntent String?      // JSON string
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations Recommendation[]
+  projects        Project[]        @relation("ClientProfile")
+
+  @@map("client_profiles")
+}
+
+// =====================================
+// AI RECOMMENDATION SYSTEM
+// =====================================
+
+model Recommendation {
+  id                   String               @id @default(cuid())
+  profileId            String
+  businessIdea         String               // JSON string
+  businessModel        String               // JSON string
+  implementationPlan   String               // JSON string
+  marketAnalysis       String               // JSON string
+  feasibilityScore     String               // JSON string
+  estimatedInvestment  String               // JSON string
+  risks                String               // JSON string
+  status               RecommendationStatus @default(DRAFT)
+  feedback             String?              // JSON string
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  // Relations
+  profile  ClientProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@map("recommendations")
+}
+
+model BusinessTemplate {
+  id                    String         @id @default(cuid())
+  title                 String
+  description           String
+  industry              String
+  targetMarket          String?
+  businessModel         String         // JSON string (array)
+  requirements          String?        // JSON string
+  features              String?        // JSON string (array)
+  techStack             String?        // JSON string
+  estimatedCost         String?        // JSON string
+  timeline              String?        // JSON string
+  successMetrics        String?        // JSON string (array)
+  risks                 String?        // JSON string (array)
+  marketAnalysis        String?        // JSON string
+  competitorAnalysis    String?        // JSON string (array)
+  revenueProjection     String?        // JSON string
+  implementationSteps   String?        // JSON string (array)
+  supportingResources   String?        // JSON string
+  tags                  String?        // JSON string (array)
+  complexity            String         @default("moderate") // simple, moderate, complex
+  status                TemplateStatus @default(ACTIVE)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@map("business_templates")
+}
+
+// =====================================
+// PROJECT MANAGEMENT
+// =====================================
+
+model Project {
+  id               String        @id @default(cuid())
+  title            String
+  description      String?
+  clientId         String
+  managerId        String?
+  recommendationId String?
+  businessTemplate String?       // JSON string
+  budget           String?       // JSON string
+  timeline         String?       // JSON string
+  requirements     String?       // JSON string
+  deliverables     String?       // JSON string (array)
+  technologies     String?       // JSON string (array)
+  team             String?       // JSON string
+  milestones       String?       // JSON string (array)
+  risks            String?       // JSON string (array)
+  status           ProjectStatus @default(PLANNING)
+  completedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  client         ClientProfile   @relation("ClientProfile", fields: [clientId], references: [id], onDelete: Cascade)
+  manager        User?           @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+  recommendation Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: SetNull)
+  tasks          ProjectTask[]
+
+  @@map("projects")
+}
+
+model ProjectTask {
+  id              String     @id @default(cuid())
+  projectId       String
+  title           String
+  description     String?
+  assigneeId      String?
+  priority        String     @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status          TaskStatus @default(TODO)
+  dueDate         DateTime?
+  estimatedHours  Int?
+  tags            String?    // JSON string (array)
+  dependencies    String?    // JSON string (array)
+  completedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_tasks")
+}

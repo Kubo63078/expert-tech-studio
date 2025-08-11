@@ -1,0 +1,469 @@
+// ExpertTech Studio Database Schema
+// Prisma ORM Schema Definition
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// =====================================
+// ENUM DEFINITIONS
+// =====================================
+
+enum UserRole {
+  CLIENT
+  PROJECT_MANAGER
+  DEVELOPER
+  ADMIN
+}
+
+enum ClientStatus {
+  INITIAL
+  ANALYZED
+  IN_DEVELOPMENT
+  LAUNCHED
+  CANCELLED
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_DEVELOPMENT
+  REVIEW
+  DEPLOYED
+  MAINTENANCE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum ProjectPhaseStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+enum DeliverableStatus {
+  PENDING
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+}
+
+enum CommunicationType {
+  EMAIL
+  MEETING
+  CALL
+  MESSAGE
+  SYSTEM
+}
+
+// =====================================
+// CORE USER MANAGEMENT
+// =====================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(CLIENT)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  clientProfile    ClientProfile?
+  teamMemberships  TeamMember[]
+  communications   Communication[]
+  refreshTokens    RefreshToken[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String   @unique @db.VarChar(500)
+  userId    String   @db.Uuid
+  expiresAt DateTime @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  isRevoked Boolean  @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// =====================================
+// CLIENT MANAGEMENT
+// =====================================
+
+model ClientProfile {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @unique @db.Uuid
+  status       ClientStatus @default(INITIAL)
+  basicInfo    Json         @db.JsonB
+  expertise    Json?        @db.JsonB
+  businessIntent Json?      @db.JsonB
+  aiAnalysis   Json?        @db.JsonB
+  notes        String?      @db.Text
+  createdAt    DateTime     @default(now()) @db.Timestamptz
+  updatedAt    DateTime     @updatedAt @db.Timestamptz
+
+  // Relations
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations Recommendation[]
+  projects        Project[]
+  interviews      Interview[]
+  files          FileUpload[]
+
+  @@index([status])
+  @@map("client_profiles")
+}
+
+model Interview {
+  id              String   @id @default(uuid()) @db.Uuid
+  clientId        String   @db.Uuid
+  interviewerName String   @db.VarChar(100)
+  interviewDate   DateTime @db.Timestamptz
+  duration        Int      // minutes
+  keyInsights     Json     @db.JsonB
+  recommendations Json?    @db.JsonB
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  client ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
+}
+
+// =====================================
+// AI RECOMMENDATION SYSTEM
+// =====================================
+
+model Recommendation {
+  id                     String   @id @default(uuid()) @db.Uuid
+  clientId               String   @db.Uuid
+  title                  String   @db.VarChar(255)
+  description            String   @db.Text
+  businessModel          Json     @db.JsonB
+  scores                 Json     @db.JsonB // marketPotential, personalFit, technicalFeasibility, etc.
+  implementationPlan     Json     @db.JsonB
+  estimatedCost          Decimal  @db.Decimal(15, 2)
+  estimatedTimelineWeeks Int
+  status                 String   @default("draft") @db.VarChar(50)
+  isSelected             Boolean  @default(false)
+  feedback               Json?    @db.JsonB
+  createdAt              DateTime @default(now()) @db.Timestamptz
+  updatedAt              DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@map("recommendations")
+}
+
+model BusinessTemplate {
+  id           String   @id @default(uuid()) @db.Uuid
+  industry     String   @db.VarChar(100)
+  name         String   @db.VarChar(255)
+  description  String   @db.Text
+  features     Json     @db.JsonB
+  techStack    Json     @db.JsonB
+  templateData Json     @db.JsonB
+  estimatedCost Decimal @db.Decimal(15, 2)
+  estimatedTime Int     // weeks
+  version      Int      @default(1)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  @@map("business_templates")
+}
+
+// =====================================
+// PROJECT MANAGEMENT
+// =====================================
+
+model Project {
+  id               String        @id @default(uuid()) @db.Uuid
+  clientId         String        @db.Uuid
+  recommendationId String?       @db.Uuid
+  projectNumber    String        @unique @db.VarChar(20) // e.g., PRJ-2024-001
+  name             String        @db.VarChar(255)
+  description      String?       @db.Text
+  status           ProjectStatus @default(PLANNING)
+  metadata         Json?         @db.JsonB // Additional project settings
+  startDate        DateTime?     @db.Timestamptz
+  endDate          DateTime?     @db.Timestamptz
+  actualEndDate    DateTime?     @db.Timestamptz
+  createdAt        DateTime      @default(now()) @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @db.Timestamptz
+
+  // Relations
+  client         ClientProfile   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  recommendation Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: SetNull)
+  phases         ProjectPhase[]
+  team           TeamMember[]
+  budget         ProjectBudget?
+  deliverables   Deliverable[]
+  communications Communication[]
+  files          FileUpload[]
+  payments       Payment[]
+
+  @@index([status])
+  @@index([clientId])
+  @@map("projects")
+}
+
+model ProjectPhase {
+  id           String             @id @default(uuid()) @db.Uuid
+  projectId    String             @db.Uuid
+  name         String             @db.VarChar(255)
+  description  String?            @db.Text
+  order        Int                // Phase order within project
+  status       ProjectPhaseStatus @default(PENDING)
+  startDate    DateTime?          @db.Timestamptz
+  endDate      DateTime?          @db.Timestamptz
+  deliverables String[]          // Array of deliverable names
+  dependencies String[]          // Array of phase IDs this depends on
+  createdAt    DateTime           @default(now()) @db.Timestamptz
+  updatedAt    DateTime           @updatedAt @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_phases")
+}
+
+model TeamMember {
+  id             String   @id @default(uuid()) @db.Uuid
+  projectId      String   @db.Uuid
+  userId         String   @db.Uuid
+  role           String   @db.VarChar(50) // pm, developer, designer, consultant
+  responsibilities String[] // Array of responsibilities
+  allocationPercent Int    @default(100) // Percentage of time allocated
+  hourlyRate     Decimal? @db.Decimal(10, 2)
+  joinedAt       DateTime @default(now()) @db.Timestamptz
+  leftAt         DateTime? @db.Timestamptz
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("team_members")
+}
+
+model Deliverable {
+  id          String            @id @default(uuid()) @db.Uuid
+  projectId   String            @db.Uuid
+  name        String            @db.VarChar(255)
+  description String?           @db.Text
+  type        String            @db.VarChar(50) // document, code, design, deployment
+  status      DeliverableStatus @default(PENDING)
+  dueDate     DateTime?         @db.Timestamptz
+  completedAt DateTime?         @db.Timestamptz
+  assignedTo  String[]         // Array of user IDs
+  metadata    Json?             @db.JsonB
+  createdAt   DateTime          @default(now()) @db.Timestamptz
+  updatedAt   DateTime          @updatedAt @db.Timestamptz
+
+  // Relations
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  files   FileUpload[]
+
+  @@map("deliverables")
+}
+
+// =====================================
+// BUDGET & PAYMENT MANAGEMENT
+// =====================================
+
+model ProjectBudget {
+  id           String   @id @default(uuid()) @db.Uuid
+  projectId    String   @unique @db.Uuid
+  totalAmount  Decimal  @db.Decimal(15, 2)
+  currency     String   @default("KRW") @db.VarChar(3)
+  breakdown    Json     @db.JsonB // Detailed cost breakdown
+  isApproved   Boolean  @default(false)
+  approvedAt   DateTime? @db.Timestamptz
+  approvedBy   String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  paymentSchedules PaymentSchedule[]
+
+  @@map("project_budgets")
+}
+
+model PaymentSchedule {
+  id          String   @id @default(uuid()) @db.Uuid
+  budgetId    String   @db.Uuid
+  phaseName   String   @db.VarChar(255)
+  amount      Decimal  @db.Decimal(15, 2)
+  dueDate     DateTime @db.Timestamptz
+  description String?  @db.Text
+  order       Int      // Schedule order
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  budget   ProjectBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@map("payment_schedules")
+}
+
+model Payment {
+  id            String        @id @default(uuid()) @db.Uuid
+  projectId     String        @db.Uuid
+  scheduleId    String?       @db.Uuid
+  amount        Decimal       @db.Decimal(15, 2)
+  currency      String        @default("KRW") @db.VarChar(3)
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?       @db.VarChar(50)
+  
+  // Stripe integration fields
+  stripePaymentIntentId String? @unique @db.VarChar(255)
+  stripeCustomerId      String? @db.VarChar(255)
+  
+  paidAt          DateTime? @db.Timestamptz
+  failureReason   String?   @db.Text
+  refundAmount    Decimal?  @db.Decimal(15, 2)
+  refundedAt      DateTime? @db.Timestamptz
+  refundReason    String?   @db.Text
+  
+  metadata        Json?     @db.JsonB
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @db.Timestamptz
+
+  // Relations
+  project  Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  schedule PaymentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("payments")
+}
+
+// =====================================
+// COMMUNICATION & COLLABORATION
+// =====================================
+
+model Communication {
+  id           String            @id @default(uuid()) @db.Uuid
+  projectId    String            @db.Uuid
+  authorId     String            @db.Uuid
+  type         CommunicationType
+  subject      String?           @db.VarChar(500)
+  content      String            @db.Text
+  isInternal   Boolean           @default(false) // Internal team communication
+  metadata     Json?             @db.JsonB
+  createdAt    DateTime          @default(now()) @db.Timestamptz
+  updatedAt    DateTime          @updatedAt @db.Timestamptz
+
+  // Relations
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  attachments FileUpload[]
+
+  @@map("communications")
+}
+
+// =====================================
+// FILE MANAGEMENT
+// =====================================
+
+model FileUpload {
+  id             String   @id @default(uuid()) @db.Uuid
+  filename       String   @db.VarChar(255)
+  originalName   String   @db.VarChar(255)
+  mimeType       String   @db.VarChar(100)
+  size           Int      // bytes
+  url            String   @db.VarChar(1000)
+  storageKey     String   @db.VarChar(500) // S3 key or local path
+  
+  // Optional relations
+  clientId       String?  @db.Uuid
+  projectId      String?  @db.Uuid
+  deliverableId  String?  @db.Uuid
+  communicationId String? @db.Uuid
+  
+  uploadedBy     String   @db.Uuid // User ID
+  metadata       Json?    @db.JsonB
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  client        ClientProfile?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  deliverable   Deliverable?    @relation(fields: [deliverableId], references: [id], onDelete: SetNull)
+  communication Communication? @relation(fields: [communicationId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([projectId])
+  @@map("file_uploads")
+}
+
+// =====================================
+// SYSTEM AUDIT & LOGGING
+// =====================================
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid // Can be null for system actions
+  action    String   @db.VarChar(100)
+  resource  String   @db.VarChar(100) // Table or entity name
+  resourceId String? @db.Uuid
+  oldData   Json?    @db.JsonB
+  newData   Json?    @db.JsonB
+  ip        String?  @db.VarChar(45) // IPv4/IPv6
+  userAgent String?  @db.Text
+  metadata  Json?    @db.JsonB
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// =====================================
+// ANALYTICS & METRICS
+// =====================================
+
+model MetricData {
+  id        String   @id @default(uuid()) @db.Uuid
+  metricName String  @db.VarChar(100)
+  value     Decimal  @db.Decimal(15, 4)
+  tags      Json?    @db.JsonB // Additional dimensions
+  timestamp DateTime @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@index([metricName])
+  @@index([timestamp])
+  @@map("metric_data")
+}
+
+// =====================================
+// INDEXES FOR PERFORMANCE
+// =====================================
+// Indexes are defined within their respective models above
