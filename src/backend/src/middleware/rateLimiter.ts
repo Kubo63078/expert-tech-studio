@@ -28,7 +28,7 @@ const rateLimitHandler = (req: Request, res: Response): void => {
     error: {
       code: 'RATE_LIMIT_EXCEEDED',
       message: 'Too many requests. Please try again later.',
-      retryAfter: Math.ceil(config.security.rateLimitWindowMs / 1000),
+      retryAfter: 900, // 15 minutes in seconds
     },
     meta: {
       timestamp: new Date().toISOString(),
@@ -46,9 +46,9 @@ const skipRateLimit = (req: Request): boolean => {
     return true;
   }
 
-  // Skip for localhost in development (optional)
-  if (config.server.isDevelopment && req.ip === '127.0.0.1') {
-    return false; // Still apply rate limiting in development for testing
+  // Skip completely in development mode
+  if (process.env.NODE_ENV === 'development') {
+    return true;
   }
 
   return false;
@@ -68,8 +68,8 @@ const keyGenerator = (req: Request): string => {
  * Default Rate Limiter
  */
 export const rateLimiter = rateLimit({
-  windowMs: config.security.rateLimitWindowMs,
-  max: config.security.rateLimitMax,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window
   message: rateLimitHandler,
   standardHeaders: true, // Return rate limit info in headers
   legacyHeaders: false,

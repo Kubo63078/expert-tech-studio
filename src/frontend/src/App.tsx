@@ -5,6 +5,8 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ConsultationPage from './pages/ConsultationPage';
 import AnalysisResultPage from './pages/AnalysisResultPage';
+import AuthTestPage from './pages/AuthTestPage';
+import SimpleAuthTest from './pages/SimpleAuthTest';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -23,6 +25,8 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/consultation" element={<ConsultationPage />} />
             <Route path="/analysis-result" element={<AnalysisResultPage />} />
+            <Route path="/auth-test" element={<AuthTestPage />} />
+            <Route path="/simple-auth-test" element={<SimpleAuthTest />} />
           </Routes>
         </main>
         <Footer />

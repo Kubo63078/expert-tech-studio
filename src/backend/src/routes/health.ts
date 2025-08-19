@@ -11,7 +11,15 @@ import { asyncHandler } from '@/middleware/errorHandler';
 
 const router = Router();
 const prisma = new PrismaClient();
-const redis = createClient({ url: config.redis.url });
+
+// Redis client - lazy initialization
+let redis: ReturnType<typeof createClient> | null = null;
+const getRedisClient = () => {
+  if (!redis) {
+    redis = createClient({ url: config.redis.url });
+  }
+  return redis;
+};
 
 /**
  * System Health Check Interface
@@ -78,10 +86,26 @@ const checkDatabase = async (): Promise<ServiceStatus> => {
  * Check Redis Health
  */
 const checkRedis = async (): Promise<ServiceStatus> => {
+  // In development, Redis is optional - skip the actual check
+  if (config.app.nodeEnv === 'development') {
+    return {
+      status: 'degraded',
+      message: 'Redis not available (development mode - using in-memory sessions)',
+      lastChecked: new Date().toISOString(),
+    };
+  }
+
   const startTime = Date.now();
   
   try {
-    await redis.ping();
+    const client = getRedisClient();
+    
+    // Connect if not already connected
+    if (!client.isOpen) {
+      await client.connect();
+    }
+    
+    await client.ping();
     const responseTime = Date.now() - startTime;
     
     return {
@@ -125,15 +149,18 @@ const getCpuUsage = (): number => {
  * Determine Overall Health Status
  */
 const getOverallStatus = (services: HealthCheck['services']): HealthCheck['status'] => {
-  const statuses = [
-    services.database.status,
-    services.redis.status,
-  ];
-
-  if (statuses.includes('unhealthy')) {
+  // Database is critical - must be healthy
+  if (services.database.status === 'unhealthy') {
     return 'unhealthy';
   }
   
+  // In development, Redis is optional - don't fail if it's down
+  if (config.app.nodeEnv !== 'development' && services.redis.status === 'unhealthy') {
+    return 'unhealthy';
+  }
+  
+  // If any service is degraded, overall is degraded
+  const statuses = [services.database.status, services.redis.status];
   if (statuses.includes('degraded')) {
     return 'degraded';
   }

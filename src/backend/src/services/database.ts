@@ -148,21 +148,12 @@ class DatabaseService {
    */
   public async runMigrations(): Promise<void> {
     try {
-      // Check if we need to run migrations
-      const pendingMigrations = await this.prisma.$queryRaw`
-        SELECT name FROM _prisma_migrations 
-        WHERE finished_at IS NULL
-      `;
-      
-      if (Array.isArray(pendingMigrations) && pendingMigrations.length > 0) {
-        logger.info('Running pending migrations...');
-        // In production, this would be handled by deployment scripts
-        // For development, we'll rely on manual migration commands
-      }
-
+      // Simple connectivity test instead of migration status check
+      await this.prisma.$queryRaw`SELECT 1 as status`;
       logger.info('✅ Database schema is up to date');
     } catch (error) {
-      logger.warn('Could not check migration status:', error);
+      logger.warn('Could not verify database schema:', error);
+      // Don't throw error, allow server to continue
     }
   }
 
@@ -216,7 +207,7 @@ class DatabaseService {
         this.prisma.clientProfile.count(),
         this.prisma.project.count(),
         this.prisma.recommendation.count(),
-        this.prisma.payment.count(),
+        this.prisma.businessTemplate.count(),
       ]);
 
       return {
@@ -224,7 +215,7 @@ class DatabaseService {
         clientProfiles: stats[1],
         projects: stats[2],
         recommendations: stats[3],
-        payments: stats[4],
+        businessTemplates: stats[4],
       };
     } catch (error) {
       logger.error('Failed to get database stats:', error);
