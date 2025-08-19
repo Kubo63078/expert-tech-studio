@@ -1,0 +1,128 @@
+# ================================
+# Expert Tech Studio - Git Ignore
+# ================================
+
+# Environment Variables (CRITICAL SECURITY)
+.env
+.env.*
+!.env.example
+config.json
+secrets.json
+
+# Authentication & Security Files  
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+jwt-*.json
+auth-config.json
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db
+/prisma/dev.db
+src/backend/prisma/dev.db
+
+# Logs & Debug Files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build Outputs
+dist/
+build/
+.next/
+.nuxt/
+.vuepress/dist/
+.temp/
+.cache/
+
+# Coverage & Test Reports  
+coverage/
+*.lcov
+.nyc_output/
+junit.xml
+test-results/
+playwright-report/
+
+# Runtime Data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Cache Directories
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Editor & IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary Files & Uploads
+tmp/
+temp/
+uploads/
+files/
+assets/temp/
+public/uploads/
+
+# Package Manager Files
+.yarn-integrity
+package-lock.json.bak
+yarn.lock.bak
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional Files
+.env.local
+.env.development
+.env.test  
+.env.production
+
+# Claude Code Settings (keep project-specific)
+.claude/settings.local.json
+
+# PDF Test Files (temporary)
+test-pdf*.html
+*.pdf
+
+# Docker
+.dockerignore
+docker-compose.override.yml
