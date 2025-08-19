@@ -33,7 +33,13 @@
       "Bash(npx lighthouse:*)",
       "Bash(start http://localhost:4174)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "WebFetch(domain:www.hrblock.com)",
+      "Bash(rm:*)",
+      "Bash(start:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }

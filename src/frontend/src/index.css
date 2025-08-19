@@ -2,29 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 40-50대 중년층을 위한 사용자 친화적 스타일 */
+/* H&R Block Professional Design System - 40-50대 최적화 */
 @layer base {
-  /* 반응형 폰트 크기 설정 */
+  /* H&R Block 전문적인 폰트 시스템 */
   html {
-    font-size: 16px; /* 모바일 기본 */
+    font-size: 16px; /* 모바일 기본 - 40-50대 가독성 */
+    /* scroll-behavior: smooth; - ScrollToTop 컴포넌트와의 충돌 방지를 위해 제거 */
   }
   
   @media (min-width: 768px) {
     html {
-      font-size: 18px; /* 태블릿 이상 */
+      font-size: 17px; /* 태블릿 */
     }
   }
   
   @media (min-width: 1024px) {
     html {
-      font-size: 18px; /* 데스크톱 */
+      font-size: 18px; /* 데스크톱 - 충분한 크기 */
     }
   }
   
   body {
-    @apply bg-gray-50 text-gray-900;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    @apply bg-gray-50 text-neutral-900 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
+    letter-spacing: 0.01em;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
   
   /* 더 큰 터치 타겟 */
@@ -53,7 +56,7 @@
   
   /* 포커스 가시성 개선 */
   *:focus {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #00a651;
     outline-offset: 2px;
   }
   
@@ -63,72 +66,57 @@
 }
 
 @layer components {
-  /* 40-50대 전용 버튼 스타일 */
-  .btn-senior {
-    @apply bg-primary-600 hover:bg-primary-700 focus:bg-primary-800 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out text-senior-lg min-h-[56px] focus:ring-4 focus:ring-primary-300 focus:ring-offset-2;
-    letter-spacing: 0.025em;
-  }
-  
-  /* 반응형 버튼 스타일 */
+  /* H&R Block Professional Button System */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 focus:bg-primary-800 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg shadow-md transition duration-200 ease-in-out text-senior-base min-h-[48px] sm:min-h-[52px] focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white text-base font-semibold rounded-button shadow-button hover:shadow-button-hover transition-all duration-200 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    letter-spacing: 0.01em;
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 focus:bg-gray-100 text-primary-600 border-2 border-primary-600 font-semibold py-3 px-4 sm:px-6 rounded-lg shadow-md transition duration-200 ease-in-out text-senior-base min-h-[48px] sm:min-h-[52px] focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-neutral-50 active:bg-neutral-100 text-primary-600 border-2 border-primary-600 text-base font-semibold rounded-button shadow-button hover:shadow-button-hover transition-all duration-200 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    letter-spacing: 0.01em;
   }
   
-  .btn-outline {
-    @apply bg-transparent hover:bg-primary-50 focus:bg-primary-100 text-primary-600 border border-primary-300 font-medium py-3 px-4 sm:px-6 rounded-lg transition duration-200 ease-in-out text-senior-base min-h-[48px] sm:min-h-[52px] focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+  .btn-accent {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-accent-500 hover:bg-accent-600 active:bg-accent-700 text-white text-base font-semibold rounded-button shadow-button hover:shadow-button-hover transition-all duration-200 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2;
+    letter-spacing: 0.01em;
   }
   
-  /* 반응형 입력 필드 */
+  /* H&R Block Professional Card System */
+  .card {
+    @apply bg-white rounded-card shadow-card hover:shadow-card-hover focus-within:shadow-card-hover transition-all duration-200 border border-neutral-200;
+  }
+  
+  .card-interactive {
+    @apply card cursor-pointer hover:bg-neutral-50 hover:border-primary-200 hover:shadow-professional;
+  }
+  
+  /* H&R Block Professional Input System */
   .input-field {
-    @apply w-full px-4 py-3 sm:py-4 text-senior-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition duration-200 ease-in-out min-h-[48px] sm:min-h-[52px] placeholder:text-gray-500;
+    @apply w-full px-4 py-3 text-base border-2 border-neutral-300 bg-white rounded-input focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 min-h-[48px] placeholder:text-neutral-500 placeholder:font-normal;
+    font-family: inherit;
+  }
+  
+  .input-field:hover {
+    @apply border-neutral-400;
   }
   
   .input-field:invalid {
-    @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+    @apply border-error-500 focus:border-error-500 focus:ring-error-500;
   }
   
-  /* 반응형 카드 스타일 */
-  .card {
-    @apply bg-white rounded-xl shadow-md hover:shadow-lg focus-within:shadow-lg transition duration-200 ease-in-out border border-gray-100;
+  /* H&R Block Hero Section */
+  .hero-gradient {
+    @apply bg-gradient-to-br from-primary-600 via-primary-700 to-neutral-800;
   }
   
-  /* 접근성 개선된 네비게이션 링크 */
+  /* H&R Block Professional Navigation */
   .nav-link {
-    @apply text-senior-base font-medium text-gray-700 hover:text-primary-600 focus:text-primary-600 px-3 sm:px-4 py-2 sm:py-3 rounded-md transition duration-200 ease-in-out min-h-[44px] sm:min-h-[48px] flex items-center focus:ring-2 focus:ring-primary-300 focus:ring-offset-1;
+    @apply relative px-4 py-3 text-base font-medium text-neutral-700 hover:text-primary-600 focus:text-primary-600 transition-all duration-200 min-h-[48px] flex items-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg;
   }
   
   .nav-link.active {
-    @apply text-primary-600 bg-primary-50 border-l-4 border-primary-600;
-  }
-  
-  /* 상태 메시지 스타일 */
-  .alert {
-    @apply p-4 rounded-lg border-l-4 text-senior-base font-medium;
-  }
-  
-  .alert-success {
-    @apply bg-green-50 border-green-400 text-green-700;
-  }
-  
-  .alert-error {
-    @apply bg-red-50 border-red-400 text-red-700;
-  }
-  
-  .alert-warning {
-    @apply bg-yellow-50 border-yellow-400 text-yellow-800;
-  }
-  
-  .alert-info {
-    @apply bg-blue-50 border-blue-400 text-blue-700;
-  }
-  
-  /* 스킵 링크 (접근성) */
-  .skip-link {
-    @apply absolute left-0 top-0 bg-primary-600 text-white px-4 py-2 rounded-br-md transform -translate-y-full focus:translate-y-0 transition-transform z-50;
+    @apply text-primary-700 bg-primary-50;
   }
 }
 
@@ -142,44 +130,9 @@
     @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
   }
   
-  /* 반응형 텍스트 크기 */
-  .text-senior {
-    @apply text-base sm:text-senior-base;
-  }
-  
-  .text-senior-lg {
-    @apply text-lg sm:text-senior-lg;
-  }
-  
-  .text-senior-xl {
-    @apply text-xl sm:text-senior-xl;
-  }
-  
-  .text-senior-2xl {
-    @apply text-xl sm:text-senior-2xl;
-  }
-  
-  /* 반응형 여백 - 모바일에서는 더 컴팩트 */
-  .spacing-comfortable {
-    @apply space-y-4 sm:space-y-6;
-  }
-  
-  .spacing-relaxed {
-    @apply space-y-6 sm:space-y-8;
-  }
-  
   /* 컨테이너 패딩 */
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
-  }
-  
-  /* 반응형 그리드 */
-  .grid-responsive {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
-  }
-  
-  .grid-responsive-2 {
-    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8;
   }
   
   /* 터치 친화적 간격 */
@@ -187,40 +140,20 @@
     @apply p-4 sm:p-6;
   }
   
-  /* 고대비 모드 지원 */
-  @media (prefers-contrast: high) {
-    .high-contrast-border {
-      @apply border-black border-2;
-    }
-    
-    .high-contrast-text {
-      @apply text-black;
-    }
+  /* H&R Block 브랜드 텍스트 */
+  .text-brand {
+    @apply text-primary-600;
   }
   
-  /* 인쇄 최적화 */
-  @media print {
-    .print-hidden {
-      @apply hidden;
-    }
-    
-    .print-block {
-      @apply block;
-    }
-    
-    .print-break-after {
-      page-break-after: always;
-    }
+  .text-brand-accent {
+    @apply text-accent-500;
   }
   
-  /* 다크 모드 지원 (미래 확장성) */
-  @media (prefers-color-scheme: dark) {
-    .dark-mode-bg {
-      @apply bg-gray-900;
-    }
-    
-    .dark-mode-text {
-      @apply text-gray-100;
-    }
+  /* 텍스트 말줄임 유틸리티 */
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
