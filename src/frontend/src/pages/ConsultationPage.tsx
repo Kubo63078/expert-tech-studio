@@ -16,6 +16,7 @@ import {
   categoryDescriptions,
   type InterviewQuestion
 } from '../data/interviewQuestions';
+import { analysisService } from '../services/analysisService';
 
 interface InterviewStep {
   id: string;
@@ -30,6 +31,7 @@ const ConsultationPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   // 인터뷰 단계 정의
   const interviewSteps: InterviewStep[] = [
@@ -127,6 +129,26 @@ const ConsultationPage = () => {
     scrollToTop();
   };
 
+  const performAnalysis = async () => {
+    try {
+      const result = await analysisService.analyzeExpertise(answers);
+      setAnalysisResult(result);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      setIsLoading(false);
+      // 에러 시에도 목업 결과 표시를 위해 다시 시도
+      setTimeout(async () => {
+        try {
+          const fallbackResult = await analysisService.analyzeExpertise(answers);
+          setAnalysisResult(fallbackResult);
+        } catch (fallbackError) {
+          console.error('Fallback analysis failed:', fallbackError);
+        }
+      }, 1000);
+    }
+  };
+
   const handleAnswerSubmit = (questionId: string, answer: any) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
     setSelectedMultiOptions([]); // 다중 선택 초기화
@@ -138,10 +160,8 @@ const ConsultationPage = () => {
       setCurrentStep('analysis');
       setIsLoading(true);
       
-      // 실제로는 AI API 호출
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 3000);
+      // 실제 AI API 호출
+      performAnalysis();
     }
   };
 
@@ -514,39 +534,121 @@ const ConsultationPage = () => {
             총 {questionFlow.length}개 질문 분석을 통해 맞춤형 비즈니스 분석 리포트와 추천 모델을 생성했습니다.
           </p>
           
-          {/* 완료 후 미리보기 */}
-          <div className="bg-success-50 rounded-2xl p-8 mb-8 max-w-2xl mx-auto">
-            <h3 className="text-lg font-bold text-success-900 mb-4">생성된 분석 내용</h3>
-            <div className="grid grid-cols-2 gap-4 text-success-800">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success-600">85점</div>
-                <div className="text-sm">전문성 점수</div>
+          {/* 실제 분석 결과 표시 */}
+          {analysisResult && (
+            <>
+              {/* 개인화된 통찰 */}
+              <div className="bg-primary-50 rounded-2xl p-8 mb-8 max-w-3xl mx-auto text-left">
+                <h3 className="text-lg font-bold text-primary-900 mb-4">🎯 맞춤형 분석 결과</h3>
+                <div className="text-primary-800 text-lg leading-relaxed mb-6">
+                  {analysisResult.personalizedInsight}
+                </div>
+                
+                {/* 점수 및 기본 지표 */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="text-center bg-white rounded-lg p-4">
+                    <div className="text-3xl font-bold text-primary-600">{analysisResult.expertiseScore}점</div>
+                    <div className="text-sm text-neutral-600">전문성 점수</div>
+                  </div>
+                  <div className="text-center bg-white rounded-lg p-4">
+                    <div className="text-3xl font-bold text-success-600">{analysisResult.successProbability}</div>
+                    <div className="text-sm text-neutral-600">예측 성공 확률</div>
+                  </div>
+                </div>
+
+                {/* 핵심 강점 */}
+                <div className="mb-6">
+                  <h4 className="font-bold text-primary-900 mb-3">🔥 발견된 핵심 강점</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {analysisResult.keyStrengths.map((strength: string, index: number) => (
+                      <div key={index} className="flex items-center text-sm text-primary-700">
+                        <CheckIcon className="h-4 w-4 text-success-600 mr-2" />
+                        {strength}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 비즈니스 기회 (힌트만) */}
+                <div className="bg-accent-50 rounded-lg p-4 border-2 border-accent-200">
+                  <h4 className="font-bold text-accent-900 mb-2">💡 발견된 비즈니스 기회</h4>
+                  <p className="text-accent-800 mb-3">{analysisResult.businessHint}</p>
+                  <p className="text-accent-700 text-sm italic">* 구체적 구현 방법과 기술 스택은 전문가 상담에서 공개됩니다</p>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success-600">3개</div>
-                <div className="text-sm">추천 비즈니스 모델</div>
+
+              {/* 긴급성 & 차별화 */}
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-8 mb-8 max-w-3xl mx-auto">
+                <h3 className="text-lg font-bold text-red-900 mb-6">⚠️ 중요한 타이밍 정보</h3>
+                
+                <div className="space-y-4">
+                  <div className="bg-white rounded-lg p-4 border-l-4 border-orange-500">
+                    <h4 className="font-bold text-orange-900 mb-2">🚨 시장 기회</h4>
+                    <p className="text-orange-800">{analysisResult.marketOpportunity}</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
+                    <h4 className="font-bold text-blue-900 mb-2">🛡️ ExpertTech만의 장점</h4>
+                    <p className="text-blue-800">{analysisResult.exclusiveValue}</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 border-l-4 border-red-500">
+                    <h4 className="font-bold text-red-900 mb-2">⏰ 지금 시작해야 하는 이유</h4>
+                    <p className="text-red-800">{analysisResult.urgencyFactor}</p>
+                  </div>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success-600">82%</div>
-                <div className="text-sm">예측 성공 확률</div>
+
+              {/* 다음 단계 안내 */}
+              <div className="bg-neutral-50 rounded-2xl p-8 mb-8 max-w-3xl mx-auto text-left">
+                <h3 className="text-lg font-bold text-neutral-900 mb-4">🔍 더 자세한 정보가 필요하신가요?</h3>
+                <p className="text-neutral-700 mb-6 leading-relaxed">
+                  {analysisResult.nextStepTeaser}
+                </p>
+                
+                <div className="bg-primary-100 rounded-lg p-4">
+                  <h4 className="font-bold text-primary-900 mb-2">전문가 상담에서 추가로 제공되는 내용:</h4>
+                  <ul className="text-primary-800 text-sm space-y-1">
+                    <li>• 3가지 구체적 비즈니스 모델 상세 설명</li>
+                    <li>• 기술 스택 및 개발 로드맵</li>
+                    <li>• 파트너사 네트워크 및 협력 방안</li>
+                    <li>• 수익 모델 및 ROI 시뮬레이션</li>
+                    <li>• 6개월 단계별 실행 계획</li>
+                  </ul>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success-600">4가지</div>
-                <div className="text-sm">핵심 강점 발견</div>
-              </div>
+            </>
+          )}
+          
+          {/* CTA 버튼들 */}
+          <div className="space-y-4">
+            <button 
+              onClick={() => window.location.href = '/quick-consultation'}
+              className="inline-flex items-center px-10 py-5 bg-accent-600 hover:bg-accent-700 text-white text-xl font-bold rounded-button shadow-professional hover:shadow-button-hover transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-accent-400/50 group"
+            >
+              <span className="mr-3">🚀</span>
+              무료 전문가 상담 신청하기
+              <ChevronRightIcon className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            <div className="flex space-x-4 justify-center">
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="btn-secondary"
+              >
+                홈으로 돌아가기
+              </button>
+              <button 
+                onClick={() => window.location.href = '/quick-consultation'}
+                className="btn-primary"
+              >
+                빠른 상담도 받아보기
+              </button>
             </div>
           </div>
           
-          <button 
-            onClick={() => window.location.href = '/analysis-result'}
-            className="btn-primary text-xl px-10 py-5"
-          >
-            <ChartBarIcon className="h-6 w-6 mr-2" />
-            분석 결과 보기 →
-          </button>
-          
-          <p className="text-sm text-neutral-500 mt-4">
-            * 분석 결과는 24시간 동안 확인 가능합니다
+          <p className="text-sm text-neutral-500 mt-6">
+            * 더 자세한 정보는 전문가 상담을 통해 확인하실 수 있습니다
           </p>
         </>
       )}

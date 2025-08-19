@@ -87,6 +87,68 @@ export type Database = {
           updated_at?: string
         }
       }
+      quick_consultations: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone?: string
+          expertise_field: string
+          idea_description: string
+          target_customers: string
+          budget_range: string
+          consultation_timing: string
+          main_concerns: string[]
+          contact_preference: string
+          status: 'PENDING' | 'CONTACTED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+          notes?: string
+          contacted_at?: string
+          scheduled_at?: string
+          completed_at?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string
+          expertise_field: string
+          idea_description: string
+          target_customers: string
+          budget_range: string
+          consultation_timing: string
+          main_concerns: string[]
+          contact_preference: string
+          status?: 'PENDING' | 'CONTACTED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+          notes?: string
+          contacted_at?: string
+          scheduled_at?: string
+          completed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string
+          expertise_field?: string
+          idea_description?: string
+          target_customers?: string
+          budget_range?: string
+          consultation_timing?: string
+          main_concerns?: string[]
+          contact_preference?: string
+          status?: 'PENDING' | 'CONTACTED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+          notes?: string
+          contacted_at?: string
+          scheduled_at?: string
+          completed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

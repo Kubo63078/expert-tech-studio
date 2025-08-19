@@ -45,7 +45,17 @@
       "Bash(git rm:*)",
       "Bash(tree:*)",
       "Bash(vercel:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_select_option",
+      "mcp__playwright__browser_snapshot",
+      "WebSearch",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }

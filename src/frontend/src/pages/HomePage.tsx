@@ -129,21 +129,48 @@ const HomePage = () => {
               </div>
               
               {/* CTA 버튼들 */}
-              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center">
-                <Link 
-                  to="/consultation" 
-                  className="inline-flex items-center px-8 py-4 bg-accent-500 hover:bg-accent-600 text-white text-xl font-bold rounded-button shadow-button-hover hover:shadow-professional transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent-400/50"
-                >
-                  <span className="mr-2">💼</span>
-                  무료 전문성 분석 시작
-                  <ArrowRightIcon className="ml-3 h-6 w-6" aria-hidden="true" />
-                </Link>
-                <Link 
-                  to="/about" 
-                  className="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary-600 text-xl font-semibold rounded-button transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-white/50"
-                >
-                  더 알아보기
-                </Link>
+              <div className="space-y-4">
+                {/* 주요 CTA */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                  <Link 
+                    to="/consultation" 
+                    className="inline-flex items-center px-8 py-4 bg-accent-500 hover:bg-accent-600 text-white text-xl font-bold rounded-button shadow-button-hover hover:shadow-professional transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent-400/50"
+                  >
+                    <span className="mr-2">🔍</span>
+                    전문성 심층 분석 (30분)
+                    <ArrowRightIcon className="ml-3 h-6 w-6" aria-hidden="true" />
+                  </Link>
+                  <Link 
+                    to="/quick-consultation" 
+                    className="inline-flex items-center px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-xl font-bold rounded-button shadow-button-hover hover:shadow-professional transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-400/50"
+                  >
+                    <span className="mr-2">⚡</span>
+                    아이디어 빠른 상담 (5분)
+                    <ArrowRightIcon className="ml-3 h-6 w-6" aria-hidden="true" />
+                  </Link>
+                </div>
+                
+                {/* 보조 설명 */}
+                <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start text-sm text-primary-200">
+                  <div className="text-center lg:text-left">
+                    <span className="font-medium">처음 시작하는 분들을 위한</span><br />
+                    <span>완전한 전문성 분석과 비즈니스 추천</span>
+                  </div>
+                  <div className="text-center lg:text-left">
+                    <span className="font-medium">이미 구상이 있는 분들을 위한</span><br />
+                    <span>빠른 아이디어 검토와 전문가 상담</span>
+                  </div>
+                </div>
+                
+                {/* 보조 링크 */}
+                <div className="flex justify-center lg:justify-start">
+                  <Link 
+                    to="/about" 
+                    className="inline-flex items-center px-6 py-3 bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary-600 text-lg font-semibold rounded-button transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-white/50"
+                  >
+                    더 알아보기
+                  </Link>
+                </div>
               </div>
             </div>
             
