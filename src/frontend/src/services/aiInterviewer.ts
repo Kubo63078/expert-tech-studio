@@ -87,7 +87,7 @@ export class AIInterviewer {
         allowCustom: true,
         customPlaceholder: questionData.customPlaceholder
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ 첫 질문 생성 실패, 폴백 사용:', error);
       return this.getFallbackFirstQuestion();
     }
@@ -161,7 +161,7 @@ ${this.questionHistory.map((q, i) => `${i + 1}. ${q}`).join('\n')}
         allowCustom: true,
         customPlaceholder: questionData.customPlaceholder
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ 다음 질문 생성 실패, 폴백 사용:', error);
       return this.getFallbackQuestion(context);
     }
@@ -245,19 +245,20 @@ ${this.questionHistory.map((q, i) => `${i + 1}. ${q}`).join('\n')}
         // 다른 에러이거나 최대 재시도 도달
         throw new Error(`OpenAI API 오류: ${response.status}`);
 
-      } catch (error) {
+      } catch (error: unknown) {
         // 마지막 시도였다면 에러 발생
         if (attempt === maxRetries) {
           console.error(`❌ API 호출 최종 실패 (${maxRetries + 1}회 시도 후):`, error);
           throw error;
         }
 
-        // 429가 아닌 네트워크 에러의 경우 잠시 대기
-        if (error instanceof Error && !error.message.includes('429')) {
-          const waitTime = 1000 * (attempt + 1);
-          console.log(`⏳ 네트워크 에러 - ${waitTime/1000}초 후 재시도...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
+        // 429가 아닌 네트워크 에러의 경우 잠시 대기 (레거시 코드 - Vercel Functions 사용으로 비활성화)
+        // const errorMessage = error instanceof Error ? error.message : String(error);
+        // if (!errorMessage.includes('429')) {
+        //   const waitTime = 1000 * (attempt + 1);
+        //   console.log(`⏳ 네트워크 에러 - ${waitTime/1000}초 후 재시도...`);
+        //   await new Promise(resolve => setTimeout(resolve, waitTime));
+        // }
       }
     }
 
@@ -300,7 +301,7 @@ ${this.questionHistory.map((q, i) => `${i + 1}. ${q}`).join('\n')}
       }
       
       return this.convertToJSON(result);
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('허깅페이스도 실패, 스마트 정적 질문 사용:', error);
       throw error; // 폴백 질문 사용하도록 에러 전파
     }

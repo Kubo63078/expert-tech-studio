@@ -16,26 +16,29 @@ export interface UserAnswers {
 }
 
 export class AnalysisService {
-  private backendUrl: string;
+  private apiUrl: string;
 
   constructor() {
-    // 백엔드 URL 설정 (개발/프로덕션 자동 감지)
-    this.backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    // Vercel Functions API URL 설정 (프로덕션/개발 자동 감지)
+    this.apiUrl = import.meta.env.MODE === 'production' 
+      ? '/api/ai-analyze'  // Vercel Functions 상대 경로
+      : '/api/ai-analyze'; // 개발 환경에서도 동일한 경로 사용
     
     console.log('🚀 Frontend AI Service initialized:', {
-      backendUrl: this.backendUrl,
-      mode: import.meta.env.MODE
+      apiUrl: this.apiUrl,
+      mode: import.meta.env.MODE,
+      isProduction: import.meta.env.MODE === 'production'
     });
   }
 
   /**
-   * 백엔드를 통해 사용자 답변 분석 요청
+   * Vercel Functions을 통해 사용자 답변 분석 요청
    */
   async analyzeExpertise(answers: UserAnswers): Promise<AnalysisResult> {
-    console.log('📡 Requesting AI analysis from backend...');
+    console.log('📡 Requesting AI analysis via Vercel Functions...');
     
     try {
-      const response = await fetch(`${this.backendUrl}/api/ai/analyze`, {
+      const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,22 +47,22 @@ export class AnalysisService {
       });
 
       if (!response.ok) {
-        throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Vercel Function error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       
       if (!data.success) {
-        throw new Error(data.message || 'Backend analysis failed');
+        throw new Error(data.message || 'AI analysis failed');
       }
 
-      console.log('✅ AI analysis completed via backend');
+      console.log('✅ AI analysis completed via Vercel Functions');
       return data.data;
       
     } catch (error) {
-      console.error('Backend analysis failed:', error);
+      console.error('Vercel Function analysis failed:', error);
       
-      // 백엔드 실패시 클라이언트 사이드 폴백
+      // API 실패시 클라이언트 사이드 폴백
       console.log('🎭 Using client-side fallback analysis');
       return this.getClientFallbackAnalysis(answers);
     }

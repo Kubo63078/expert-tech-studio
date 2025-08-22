@@ -55,8 +55,20 @@
       "mcp__playwright__browser_snapshot",
       "WebSearch",
       "WebFetch(domain:platform.openai.com)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(npm run:*)",
+      "Bash(git restore:*)",
+      "Bash(npm test)",
+      "mcp__playwright__browser_wait_for",
+      "Bash(cmd.exe:*)",
+      "Bash(set PORT=3002)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell:*)",
+      "Bash(git log:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "D:\\d D:\\claude-win\\expert-tech-studio\\src\\backend"
+    ]
   }
 }

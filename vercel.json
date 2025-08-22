@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "buildCommand": "cd src/frontend && npm run build",
+  "outputDirectory": "src/frontend/dist",
+  "functions": {
+    "api/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
