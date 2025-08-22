@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ConsultationModal from '../components/ConsultationModal';
 import { downloadAnalysisReport, downloadTextReport } from '../utils/downloadReport';
-import { AnalysisResult as AIAnalysisResult } from '../services/analysisService';
+import type { AnalysisResult as AIAnalysisResult } from '../services/analysisService';
 import { 
   ChartBarIcon,
   StarIcon,
