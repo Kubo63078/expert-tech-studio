@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// 환경 변수를 직접 하드코딩하여 테스트
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://asxcaplxnbfrhyzpyreo.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzeGNhcGx4bmJmcmh5enB5cmVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1OTQzNTYsImV4cCI6MjA3MTE3MDM1Nn0.AMhezsKrbIcmIhPtug1s9O4FbXNsHWgD9d_rDI1OmiM'
+// 환경 변수에서 Supabase 설정 가져오기
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // 디버깅을 위한 로그
 console.log('Environment variables:', {

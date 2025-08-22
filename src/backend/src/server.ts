@@ -19,6 +19,7 @@ import clientProfileRoutes from './routes/clientProfiles';
 import businessTemplateRoutes from './routes/businessTemplates';
 import recommendationRoutes from './routes/recommendations';
 import projectRoutes from './routes/projects';
+import { aiAnalysisRouter } from './routes/aiAnalysis';
 import { db } from './services/database';
 
 const app = express();
@@ -96,6 +97,7 @@ app.use('/api/v1/profiles', clientProfileRoutes);
 app.use('/api/v1/templates', businessTemplateRoutes);
 app.use('/api/v1/recommendations', recommendationRoutes);
 app.use('/api/v1/projects', projectRoutes);
+app.use('/api/ai', aiAnalysisRouter);
 
 /**
  * API Documentation
@@ -112,6 +114,7 @@ app.get('/api/docs', (_req, res) => {
       templates: '/api/v1/templates',
       recommendations: '/api/v1/recommendations',
       projects: '/api/v1/projects',
+      ai_analysis: '/api/ai',
     },
     documentation: 'https://docs.experttech-studio.com',
   });
