@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import ConsultationModal from '../components/ConsultationModal';
 import { downloadAnalysisReport, downloadTextReport } from '../utils/downloadReport';
+import { AnalysisResult as AIAnalysisResult } from '../services/analysisService';
 import { 
   ChartBarIcon,
   StarIcon,
@@ -45,85 +47,105 @@ interface BusinessRecommendation {
 }
 
 const AnalysisResultPage = () => {
-  // 샘플 분석 결과 (실제로는 AI API에서 받아옴)
-  const [analysisResult] = useState<AnalysisResult>({
-    expertiseScore: 85,
-    marketFitScore: 78,
-    successProbability: 82,
+  const location = useLocation();
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+
+  // AI 분석 결과를 페이지 형식으로 변환하는 함수
+  const convertAIResponseToPageFormat = (aiResult: AIAnalysisResult): AnalysisResult => {
+    // successProbability에서 숫자만 추출 (예: "85%" → 85)
+    const successProb = parseInt(aiResult.successProbability.replace(/[^\d]/g, '')) || 75;
+    
+    return {
+      expertiseScore: aiResult.expertiseScore,
+      marketFitScore: Math.min(90, aiResult.expertiseScore + 5), // 전문성 기반 계산
+      successProbability: successProb,
+      strengths: aiResult.keyStrengths.length > 0 ? aiResult.keyStrengths : [
+        '축적된 전문 지식과 경험',
+        '업계 이해도와 인사이트',
+        '고객 니즈 파악 능력'
+      ],
+      riskFactors: [
+        '초기 고객 확보의 어려움',
+        aiResult.urgencyFactor || '경쟁이 치열한 시장 환경',
+        '기술적 학습 곡선'
+      ],
+      nextSteps: [
+        aiResult.nextStepTeaser || 'MVP(최소 실행 가능 제품) 개발',
+        '초기 사용자 그룹 확보',
+        '마케팅 전략 수립',
+        '법적 컴플라이언스 검토'
+      ],
+      recommendations: [
+        {
+          id: 'ai-powered-service',
+          title: aiResult.businessHint || 'AI 기반 전문 서비스',
+          description: aiResult.personalizedInsight + ' ' + (aiResult.marketOpportunity || '시장에서 큰 성장 잠재력이 있습니다.'),
+          marketPotential: Math.min(90, aiResult.expertiseScore),
+          developmentCost: '2,000-4,000만원',
+          timeline: '4-8개월',
+          successRate: successProb,
+          requiredSkills: aiResult.keyStrengths.slice(0, 3),
+          targetRevenue: '월 300-800만원',
+          keyFeatures: [
+            '맞춤형 AI 솔루션',
+            '전문 지식 기반 서비스',
+            '온라인 플랫폼',
+            '고객 데이터 분석',
+            '실시간 상담 서비스'
+          ],
+          competitiveAdvantage: aiResult.exclusiveValue || '전문 경험과 AI 기술의 융합'
+        }
+      ]
+    };
+  };
+
+  // useEffect로 AI 결과 로드
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.analysisResult) {
+      console.log('🎯 AI 분석 결과 로드:', state.analysisResult);
+      const convertedResult = convertAIResponseToPageFormat(state.analysisResult);
+      setAnalysisResult(convertedResult);
+    } else {
+      // 폴백 데이터 (AI 결과가 없을 때)
+      console.log('⚠️ AI 결과 없음, 폴백 데이터 사용');
+      setAnalysisResult(getFallbackData());
+    }
+  }, [location.state]);
+
+  // 폴백 데이터 함수
+  const getFallbackData = (): AnalysisResult => ({
+    expertiseScore: 75,
+    marketFitScore: 70,
+    successProbability: 75,
     strengths: [
-      '20년 이상의 부동산 분야 전문 경험',
-      '강남지역 특화 투자 노하우 보유',
-      '업계 내 넓은 인적 네트워크',
-      '디지털 도구 활용 능력 우수'
+      '축적된 전문 지식과 경험',
+      '업계 이해도와 인사이트',
+      '고객 니즈 파악 능력'
     ],
     riskFactors: [
       '초기 고객 확보의 어려움',
       '경쟁이 치열한 시장 환경',
-      '규제 변화에 대한 대응 필요'
+      '기술적 학습 곡선'
     ],
     nextSteps: [
       'MVP(최소 실행 가능 제품) 개발',
       '초기 사용자 그룹 확보',
-      '마케팅 전략 수립',
-      '법적 컴플라이언스 검토'
+      '마케팅 전략 수립'
     ],
     recommendations: [
       {
-        id: 'real-estate-ai',
-        title: 'AI 기반 부동산 투자 분석 플랫폼',
-        description: '머신러닝을 활용한 부동산 가치 평가 및 투자 기회 분석 서비스. 강남 지역 특화 데이터를 기반으로 개인 투자자에게 맞춤형 투자 조언을 제공합니다.',
-        marketPotential: 85,
-        developmentCost: '3,000-5,000만원',
-        timeline: '6-8개월',
-        successRate: 78,
-        requiredSkills: ['부동산 분석', '데이터 해석', '고객 상담'],
-        targetRevenue: '월 500-1,000만원',
-        keyFeatures: [
-          '실시간 부동산 가격 분석',
-          '투자 리스크 계산기',
-          '지역별 시장 동향 리포트',
-          '개인 맞춤형 투자 포트폴리오',
-          '전문가 상담 서비스'
-        ],
-        competitiveAdvantage: '강남 지역 특화 데이터와 20년 전문 경험 기반'
-      },
-      {
-        id: 'property-consultant',
-        title: '온라인 부동산 컨설팅 서비스',
-        description: '화상 상담을 통한 1:1 부동산 투자 컨설팅. 개인의 재정 상황과 투자 목표에 맞춘 맞춤형 부동산 투자 전략을 제공합니다.',
-        marketPotential: 72,
-        developmentCost: '1,500-2,500만원',
-        timeline: '3-4개월',
-        successRate: 85,
-        requiredSkills: ['상담 경험', '투자 분석', '커뮤니케이션'],
-        targetRevenue: '월 300-800만원',
-        keyFeatures: [
-          '화상 상담 시스템',
-          '고객 포트폴리오 관리',
-          '투자 계획서 작성 도구',
-          '시장 분석 리포트',
-          '사후 관리 서비스'
-        ],
-        competitiveAdvantage: '개인 맞춤형 상담과 지속적인 관계 관리'
-      },
-      {
-        id: 'investment-education',
-        title: '부동산 투자 교육 플랫폼',
-        description: '초보자부터 고급자까지 대상으로 한 온라인 부동산 투자 교육 과정. 실전 경험을 바탕으로 한 체계적인 커리큘럼을 제공합니다.',
-        marketPotential: 68,
-        developmentCost: '2,000-3,000만원',
-        timeline: '4-5개월',
+        id: 'ai-service',
+        title: 'AI 기반 전문 서비스',
+        description: '전문 지식과 AI 기술을 결합한 맞춤형 서비스 플랫폼',
+        marketPotential: 75,
+        developmentCost: '2,000-4,000만원',
+        timeline: '4-8개월',
         successRate: 75,
-        requiredSkills: ['교육 기획', '콘텐츠 제작', '온라인 강의'],
-        targetRevenue: '월 200-600만원',
-        keyFeatures: [
-          '단계별 교육 과정',
-          '실전 사례 분석',
-          '온라인 시뮬레이션',
-          '커뮤니티 기능',
-          '수료증 발급'
-        ],
-        competitiveAdvantage: '실전 경험 기반의 차별화된 교육 콘텐츠'
+        requiredSkills: ['전문 지식', '기술 이해', '고객 서비스'],
+        targetRevenue: '월 300-800만원',
+        keyFeatures: ['맞춤형 솔루션', '전문 상담', '온라인 플랫폼'],
+        competitiveAdvantage: '전문 경험과 AI 기술의 융합'
       }
     ]
   });
@@ -279,6 +301,18 @@ const AnalysisResultPage = () => {
       </div>
     </div>
   );
+
+  // 로딩 중일 때
+  if (!analysisResult) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-neutral-600">분석 결과를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
